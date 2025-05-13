@@ -12,7 +12,6 @@ body {
 
 .container {
     background: white;
-    width: 100%;
     max-width: 1000px;
     margin: auto;
     padding: 2rem;
@@ -98,22 +97,22 @@ img {
     background-color: #1a5bb8;
 }
 
-/* IMAGENS: Responsivo e bem distribuído */
 .container-imagens {
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding: 1rem;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 1rem 2rem;
 }
 
 .imagem-box {
-    flex: 1 1 100%;
-    max-width: 300px;
+    flex: 1;
     text-align: center;
+    min-width: 280px;
+    max-width: 300px;
 }
 
-/* Tabela de índices */
 #tabela-indices {
     margin-top: 20px;
     font-size: 1rem;
@@ -135,3 +134,31 @@ img {
     background: #e9ecef;
     font-weight: bold;
 }
+
+/* Ajustes responsivos para dispositivos móveis */
+@media (max-width: 768px) {
+    .container-imagens {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+    }
+
+    .imagem-box {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (min-width: 769px) {
+    .container-imagens {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .imagem-box {
+        flex: 1;
+    }
+}
+

@@ -87,17 +87,15 @@
 
     .container-imagens {
       display: flex;
-      justify-content: space-between;
-      gap: 2rem;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      padding: 1rem 2rem;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      padding: 1rem 0;
     }
 
     .imagem-box {
-      flex: 1;
       text-align: center;
-      min-width: 280px;
+      flex: 1 1 280px;
       max-width: 300px;
     }
 
@@ -227,6 +225,10 @@
             <div class="imagem-box"><p>Índice</p><img src="${ind}" /></div>
           </div>
           <p style="margin-top: 10px;">${desc}</p>
+          <div>
+            <a href="${proc}" class="botao-acao" download="imagem_processada.png">📥 Download Processada</a>
+            <a href="${ind}" class="botao-acao" download="indice_vegetacao.png">📥 Download Índice</a>
+          </div>
         `;
 
         resultadosDiv.appendChild(container);
@@ -239,6 +241,3 @@
   </script>
 </body>
 </html>
-
-
-
