@@ -153,11 +153,14 @@ def analisar():
     return jsonify(resultados)
 
 def abrir_navegador():
-    webbrowser.open("http://127.0.0.1:5000")
+    webbrowser.open("http://127.0.0.1:10000")  # manténs para uso local
 
 if __name__ == '__main__':
+    import os
+    port = int(os.environ.get("PORT", 10000))  # usa 10000 localmente, mas PORT no Render
     threading.Timer(1.5, abrir_navegador).start()
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=port)
+
 
 
 
