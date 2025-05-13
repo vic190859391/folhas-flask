@@ -157,7 +157,8 @@ def abrir_navegador():
 
 if __name__ == '__main__':
     threading.Timer(1.5, abrir_navegador).start()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
+
 
 
 
