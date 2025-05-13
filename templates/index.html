@@ -212,7 +212,6 @@
 
         const [data, hora] = new Date().toLocaleString().split(", ");
         pdf.setFontSize(11);
-        pdf.text("Desenvolvedor: Victor Rosário de Novais", 20, 30);
         pdf.text(`Data: ${data}`, 20, 36);
         pdf.text(`Horário: ${hora}`, 20, 42);
 
@@ -239,7 +238,8 @@
         const yFinal = y + altura + 20;
         pdf.setFontSize(12);
         pdf.text(descricao, 20, yFinal);
-        pdf.text(`Tecido Saudável: ${pct[0]}% | Doente: ${pct[1]}% | Morto: ${pct[2]}%`, 20, yFinal + 10);
+        pdf.text(`Tecido Saudável: ${pct[0]}% | Tecido Doente ou Deficiênte: ${pct[1]}% | Tecido Morto ou Ausente: ${pct[2]}%`, 20, yFinal + 10);
+        pdf.text("Desenvolvedor: Victor Rosário de Novais", 20, 30);
 
         pdf.save("relatorio_tecnico.pdf");
       }
