@@ -12,6 +12,7 @@ body {
 
 .container {
     background: white;
+    width: 100%;
     max-width: 1000px;
     margin: auto;
     padding: 2rem;
@@ -97,21 +98,19 @@ img {
     background-color: #1a5bb8;
 }
 
-/* IMAGENS LADO A LADO COM ESPAÇAMENTO UNIFORME */
+/* IMAGENS: Responsivo e bem distribuído */
 .container-imagens {
     display: flex;
-    justify-content: space-between;
-    gap: 2rem;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 1rem 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
 }
 
 .imagem-box {
-    flex: 1;
-    text-align: center;
-    min-width: 280px;
+    flex: 1 1 100%;
     max-width: 300px;
+    text-align: center;
 }
 
 /* Tabela de índices */
@@ -136,5 +135,3 @@ img {
     background: #e9ecef;
     font-weight: bold;
 }
-
-
