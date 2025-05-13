@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: folhas-flask
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn doenca:app
+    autoDeploy: true
