@@ -13,7 +13,7 @@ body {
 .container {
     background: white;
     max-width: 1000px;
-    margin: auto;
+    width: 100%;
     padding: 2rem;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -89,8 +89,10 @@ img {
     text-decoration: none;
     border: none;
     cursor: pointer;
-    margin-top: 1rem;
+    margin: 0.5rem 0;
     transition: background-color 0.3s ease;
+    width: 90%;
+    max-width: 350px;
 }
 
 .botao-download:hover, .botao-acao:hover {
@@ -99,20 +101,20 @@ img {
 
 .container-imagens {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     gap: 2rem;
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    flex-wrap: wrap;
     padding: 1rem 2rem;
+    width: 100%;
 }
 
 .imagem-box {
-    flex: 1;
+    flex: 1 1 300px;
     text-align: center;
-    min-width: 280px;
-    max-width: 300px;
+    max-width: 100%;
 }
 
+/* Tabela de índices */
 #tabela-indices {
     margin-top: 20px;
     font-size: 1rem;
@@ -135,30 +137,25 @@ img {
     font-weight: bold;
 }
 
-/* Ajustes responsivos para dispositivos móveis */
+/* Responsivo para mobile */
 @media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
     .container-imagens {
         flex-direction: column;
-        align-items: center;
-        gap: 1rem;
         padding: 1rem 0;
     }
 
     .imagem-box {
+        max-width: 100%;
+    }
+
+    .botao-download, .botao-acao {
+        font-size: 1rem;
         width: 100%;
-        max-width: 300px;
     }
 }
 
-@media (min-width: 769px) {
-    .container-imagens {
-        flex-direction: row;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .imagem-box {
-        flex: 1;
-    }
-}
 
