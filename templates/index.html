@@ -6,15 +6,11 @@
   <title>Análise da Doença na Folha</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-    }
-
     body {
       font-family: sans-serif;
       background: #f5f5f5;
       padding: 2rem;
+      margin: 0;
       display: flex;
       justify-content: center;
       flex-direction: column;
@@ -25,31 +21,50 @@
     .container {
       background: white;
       max-width: 1000px;
-      width: 100%;
+      margin: auto;
       padding: 2rem;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    form {
+    .container-imagens {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
+      gap: 2rem;
+      padding: 1rem 0;
     }
 
-    button, select {
-      padding: 0.5em 1.5em;
-      background: #28a745;
-      color: white;
-      border: none;
+    .imagem-box {
+      flex: 1;
+      text-align: center;
+      max-width: 300px;
+    }
+
+    img {
       border-radius: 5px;
-      cursor: pointer;
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 5px;
+      object-fit: contain;
+      width: 100%;
+      height: auto;
     }
 
-    button:hover, select:hover {
-      background: #218838;
+    .botao-acao {
+      background-color: #2c7be5;
+      color: white;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      margin: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    .botao-acao:hover {
+      background-color: #1a5bb8;
     }
 
     .spinner {
@@ -67,60 +82,15 @@
       100% { transform: rotate(360deg); }
     }
 
-    .container-imagens {
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin: 1rem 0;
-    }
-
-    .imagem-box {
-      flex: 1;
-      min-width: 280px;
-      max-width: 300px;
-      text-align: center;
-    }
-
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-      padding: 5px;
-      background: #fff;
-    }
-
-    .botao-acao {
-      display: inline-block;
-      background-color: #2c7be5;
-      color: white;
-      text-align: center;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-radius: 6px;
-      text-decoration: none;
-      border: none;
-      cursor: pointer;
-      margin-top: 0.8rem;
-    }
-
-    .botao-acao:hover {
-      background-color: #1a5bb8;
-    }
-
-    .linha-botoes {
-      margin-top: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-      align-items: center;
+    #carregando {
+      display: none;
+      margin-top: 2rem;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Escala Diagramática para Doenças de Plantas</h1>
+    <h1>Escala Diagramática e Índice de Vegetação</h1>
     <form id="formulario">
       <input type="file" id="imagem" name="image" accept="image/*" multiple required>
       <select id="indice" name="indice">
@@ -128,10 +98,10 @@
         <option value="gli">GLI</option>
         <option value="ngrdi">NGRDI</option>
       </select>
-      <button type="submit" id="botao-analisar">Analisar</button>
+      <button type="submit" class="botao-acao">Analisar</button>
     </form>
 
-    <div id="carregando" style="display:none;">
+    <div id="carregando">
       <div class="spinner"></div>
       <p style="font-weight: bold; color: #2c7be5;">Carregando análise...</p>
     </div>
@@ -142,14 +112,12 @@
   <script>
     const form = document.getElementById("formulario");
     const resultadosDiv = document.getElementById("resultados");
-    const carregandoDiv = document.getElementById("carregando");
-    const botao = document.getElementById("botao-analisar");
+    const carregando = document.getElementById("carregando");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       resultadosDiv.innerHTML = "";
-      carregandoDiv.style.display = "block";
-      botao.disabled = true;
+      carregando.style.display = "block";
 
       const formData = new FormData(form);
       const files = document.getElementById("imagem").files;
@@ -158,126 +126,87 @@
         const tempData = new FormData();
         tempData.append("image", file);
         tempData.append("indice", formData.get("indice"));
-        const imagemOriginalURL = URL.createObjectURL(file);
 
-        const response = await fetch("/analisar", { method: "POST", body: tempData });
+        const imagemOriginalURL = URL.createObjectURL(file);
+        const response = await fetch("/analisar", {
+          method: "POST",
+          body: tempData
+        });
+
         const result = await response.json();
         const data = Array.isArray(result) ? result[0] : result;
 
-        const proc = `data:image/png;base64,${data.imagem}`;
-        const ind = `data:image/png;base64,${data.imagem_indice}`;
-        const indiceTexto = `Índice ${formData.get("indice").toUpperCase()} - Min: ${data.indices_vegetacao[formData.get("indice")].min.toFixed(3)}, Média: ${data.indices_vegetacao[formData.get("indice")].media.toFixed(3)}, Máx: ${data.indices_vegetacao[formData.get("indice")].max.toFixed(3)}`;
-
         const container = document.createElement("div");
-        const pct = data.area_total > 0 ? [
-          ((data.area_saudavel / data.area_total) * 100).toFixed(1),
-          ((data.area_doente / data.area_total) * 100).toFixed(1),
-          ((data.area_morta / data.area_total) * 100).toFixed(1)
-        ] : ['0.0', '0.0', '0.0'];
-
         container.innerHTML = `
-          <h3>Resultado para ${file.name}</h3>
-          <p><strong>Tecido Saudável:</strong> ${pct[0]}% | <strong>Doente:</strong> ${pct[1]}% | <strong>Morto:</strong> ${pct[2]}%</p>
+          <h3>Resultado: ${file.name}</h3>
           <div class="container-imagens">
-            <div class="imagem-box"><p>Original</p><img id="img-original" src="${imagemOriginalURL}"></div>
-            <div class="imagem-box"><p>Processada</p><img id="img-processada" src="${proc}"></div>
-            <div class="imagem-box"><p>Índice</p><img id="img-indice" src="${ind}"></div>
+            <div class="imagem-box"><p>Original</p><img src="${imagemOriginalURL}" class="img-original"/></div>
+            <div class="imagem-box"><p>Processada</p><img src="data:image/png;base64,${data.imagem}" class="img-processada"/></div>
+            <div class="imagem-box"><p>Índice</p><img src="data:image/png;base64,${data.imagem_indice}" class="img-indice"/></div>
           </div>
-          <p>${indiceTexto}</p>
-          <div class="linha-botoes">
-            <button class="botao-acao" onclick="baixarTodas('${imagemOriginalURL}', '${proc}', '${ind}', '${file.name}')">⬇️ Baixar Todas as Imagens</button>
-            <button class="botao-acao gerar-relatorio" data-nome="${file.name}" data-original="${imagemOriginalURL}" data-processada="${proc}" data-indice="${ind}" data-indiceinfo="${indiceTexto}" data-percentagens="${pct.join(',')}">📄 Gerar Relatório Técnico</button>
-          </div>
+          <p>${data.indices_vegetacao[formData.get("indice")].observacao}</p>
+          <button class="botao-acao download-todas">📥 Baixar Imagens</button>
+          <button class="botao-acao gerar-pdf">📄 Relatório Técnico</button>
         `;
 
         resultadosDiv.appendChild(container);
+
+        container.querySelector('.download-todas').addEventListener('click', () => {
+          const links = container.querySelectorAll('img');
+          links.forEach((img, i) => {
+            const a = document.createElement("a");
+            a.href = img.src;
+            a.download = `imagem_${i + 1}.png`;
+            a.click();
+          });
+        });
+
+        container.querySelector('.gerar-pdf').addEventListener('click', () => {
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF();
+          let y = 20;
+
+          pdf.setFontSize(18);
+          pdf.text("Relatório Técnico", 20, y);
+          y += 10;
+
+          pdf.setFontSize(12);
+          pdf.text("Desenvolvedor: Victor Rosário de Novais", 20, y);
+          y += 7;
+
+          pdf.text("Data e Hora: " + new Date().toLocaleString('pt-PT'), 20, y);
+          y += 10;
+
+          const resumo = `Tecido Saudável: ${(data.area_saudavel / data.area_total * 100).toFixed(1)}% | Doente: ${(data.area_doente / data.area_total * 100).toFixed(1)}% | Morto: ${(data.area_morta / data.area_total * 100).toFixed(1)}%`;
+          pdf.text(resumo, 20, y);
+          y += 10;
+
+          const indice = formData.get("indice").toUpperCase();
+          const info = data.indices_vegetacao[formData.get("indice")];
+          pdf.text(`Índice ${indice} - Mín: ${info.min.toFixed(3)} | Méd: ${info.media.toFixed(3)} | Máx: ${info.max.toFixed(3)}`, 20, y);
+          y += 10;
+
+          const imagens = container.querySelectorAll("img");
+          imagens.forEach((img, idx) => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            ctx.drawImage(img, 0, 0);
+            const imgData = canvas.toDataURL("image/png");
+            const largura = 60;
+            const altura = (canvas.height / canvas.width) * largura;
+            pdf.addImage(imgData, "PNG", 20, y, largura, altura);
+            y += altura + 10;
+          });
+
+          pdf.save("relatorio_tecnico.pdf");
+        });
       }
 
-      carregandoDiv.style.display = "none";
-      botao.disabled = false;
+      carregando.style.display = "none";
     });
-
-    function baixarTodas(original, processada, indice, nome) {
-      const zip = new JSZip();
-      zip.file(`${nome}_original.png`, urlToPromise(original), { binary: true });
-      zip.file(`${nome}_processada.png`, urlToPromise(processada), { binary: true });
-      zip.file(`${nome}_indice.png`, urlToPromise(indice), { binary: true });
-      zip.generateAsync({ type: "blob" }).then(function(content) {
-        saveAs(content, `imagens_${nome}.zip`);
-      });
-    }
-
-    async function urlToPromise(url) {
-      const res = await fetch(url);
-      return await res.blob();
-    }
-
-    document.addEventListener('click', async function (e) {
-      if (e.target.classList.contains("gerar-relatorio")) {
-        const btn = e.target;
-        btn.disabled = true;
-        btn.innerText = "A gerar...";
-
-        const nome = btn.dataset.nome;
-        const original = btn.dataset.original;
-        const proc = btn.dataset.processada;
-        const ind = btn.dataset.indice;
-        const indiceTexto = btn.dataset.indiceinfo;
-        const [saudavel, doente, morto] = btn.dataset.percentagens.split(",");
-
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF();
-        const agora = new Date();
-        const dataHora = agora.toLocaleString('pt-PT');
-
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(16);
-        pdf.text("Relatório Técnico", 105, 20, { align: "center" });
-
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(12);
-        pdf.text(`Desenvolvedor: Victor Rosário de Novais`, 20, 35);
-        pdf.text(`Data e Hora: ${dataHora}`, 20, 45);
-        pdf.text(`Nome da Imagem: ${nome}`, 20, 55);
-        pdf.text(`Tecido Saudável: ${saudavel}% | Doente: ${doente}% | Morto: ${morto}%`, 20, 65);
-        pdf.text(indiceTexto, 20, 75);
-
-        const imgs = [original, proc, ind];
-        const labels = ["Original", "Processada", "Índice"];
-        let y = 90;
-
-        for (let i = 0; i < imgs.length; i++) {
-          const img = await carregarImagemParaDataURL(imgs[i]);
-          pdf.text(labels[i], 20, y);
-          pdf.addImage(img, "PNG", 20, y + 5, 160, 80);
-          y += 90;
-        }
-
-        pdf.save(`relatorio_tecnico_${nome}.pdf`);
-        btn.disabled = false;
-        btn.innerText = "📄 Gerar Relatório Técnico";
-      }
-    });
-
-    function carregarImagemParaDataURL(src) {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = function () {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/png"));
-        };
-        img.src = src;
-      });
-    }
   </script>
-  <!-- JSZip e FileSaver para compactar múltiplas imagens -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </body>
 </html>
 
