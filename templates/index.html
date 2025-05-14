@@ -14,8 +14,6 @@
     gtag('config', 'G-JZMVVKXHVR');
   </script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
   <style>
     body {
       font-family: sans-serif;
@@ -134,7 +132,9 @@
       <button type="submit" id="botao-analisar">Analisar</button>
     </form>
 
-    <p style="margin-top: -1rem; font-size: 0.9rem; color: gray;">Pode tirar uma foto ou escolher da galeria</p>
+    <p style="margin-top: -1rem; font-size: 0.9rem; color: gray;">
+      Pode tirar uma foto, anexar do ficheiro ou selecionar da galeria
+    </p>
 
     <div id="carregando">
       <div class="spinner"></div>
@@ -233,55 +233,8 @@
       botao.disabled = false;
       botao.innerText = "Analisar";
     });
-
-    document.addEventListener("click", async (event) => {
-      if (event.target.classList.contains("gerar-pdf")) {
-        const container = event.target.closest(".resultado-container");
-        const imagens = container.querySelectorAll("img");
-        const descricao = container.querySelector(".descricao-indice").innerText;
-        const pct = event.target.dataset.pct.split(',');
-
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF("p", "mm", "a4");
-
-        pdf.setFontSize(18);
-        pdf.text("Relatório Técnico", 105, 20, null, null, "center");
-
-        const [data, hora] = new Date().toLocaleString().split(", ");
-        pdf.setFontSize(11);
-        pdf.text(`Data: ${data}`, 20, 36);
-        pdf.text(`Horário: ${hora}`, 20, 42);
-
-        const largura = 55;
-        const altura = 55;
-        const espacamento = 10;
-        const y = 50;
-        const titulos = ["Imagem Original", "Imagem Processada", "Índice de Vegetação"];
-
-        for (let i = 0; i < imagens.length; i++) {
-          const img = imagens[i];
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          ctx.drawImage(img, 0, 0);
-
-          const imgData = canvas.toDataURL("image/png");
-          const x = 20 + i * (largura + espacamento);
-          pdf.addImage(imgData, "PNG", x, y, largura, altura);
-          pdf.text(titulos[i], x + largura / 2, y + altura + 6, null, null, "center");
-        }
-
-        const yFinal = y + altura + 20;
-        pdf.setFontSize(12);
-        pdf.text(descricao, 20, yFinal);
-        pdf.text(`Tecido Saudável: ${pct[0]}% | Doente: ${pct[1]}% | Morto: ${pct[2]}%`, 20, yFinal + 10);
-        pdf.text("Desenvolvedor: Victor Rosário de Novais", 20, 30);
-
-        pdf.save("relatorio_tecnico.pdf");
-      }
-    });
   </script>
 </body>
 </html>
+
 
