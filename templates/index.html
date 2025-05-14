@@ -134,6 +134,29 @@
   </div>
 
   <script>
+    async function redimensionarImagem(file, maxLargura = 600, qualidade = 0.6) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const escala = maxLargura / img.width;
+            canvas.width = maxLargura;
+            canvas.height = img.height * escala;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              const redimensionada = new File([blob], file.name, { type: 'image/jpeg' });
+              resolve(redimensionada);
+            }, 'image/jpeg', qualidade);
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     const form = document.getElementById("formulario");
     const resultadosDiv = document.getElementById("resultados");
     const carregandoDiv = document.getElementById("carregando");
@@ -146,22 +169,23 @@
       botao.disabled = true;
       botao.innerText = "A processar...";
 
-      const formData = new FormData(form);
-      const files = document.getElementById("imagem").files;
+      const files = Array.from(document.getElementById("imagem").files);
+      const indiceSelecionado = document.getElementById("indice").value;
 
-      for (let file of files) {
-        const tempData = new FormData();
-        tempData.append("image", file);
-        tempData.append("indice", formData.get("indice"));
+      const processamentos = files.map(async (file) => {
+        const imagemReduzida = await redimensionarImagem(file);
+        const formData = new FormData();
+        formData.append("image", imagemReduzida);
+        formData.append("indice", indiceSelecionado);
 
         const imagemURL = URL.createObjectURL(file);
-        const response = await fetch("/analisar", { method: "POST", body: tempData });
+        const response = await fetch("/analisar", { method: "POST", body: formData });
         const result = await response.json();
         const data = Array.isArray(result) ? result[0] : result;
 
         if (data.erro) {
           resultadosDiv.innerHTML += `<p>Erro: ${data.erro}</p>`;
-          continue;
+          return;
         }
 
         const proc = `data:image/png;base64,${data.imagem}`;
@@ -179,70 +203,24 @@
           <h3>Resultado para ${file.name}</h3>
           <p><strong>Saudável:</strong> ${pct[0]}% | <strong>Doente:</strong> ${pct[1]}% | <strong>Morto:</strong> ${pct[2]}%</p>
           <div class="container-imagens">
-            <div class="imagem-box"><p>Imagem Original</p><img src="${imagemURL}" alt="Imagem Original"></div>
-            <div class="imagem-box"><p>Imagem Processada</p><img src="${proc}" alt="Imagem Processada"></div>
-            <div class="imagem-box"><p>Índice de Vegetação</p><img src="${ind}" alt="Índice de Vegetação"></div>
+            <div class="imagem-box"><p>Imagem Original</p><img src="${imagemURL}" alt="Imagem Original" loading="lazy"></div>
+            <div class="imagem-box"><p>Imagem Processada</p><img src="${proc}" alt="Imagem Processada" loading="lazy"></div>
+            <div class="imagem-box"><p>Índice de Vegetação</p><img src="${ind}" alt="Índice de Vegetação" loading="lazy"></div>
           </div>
           <p class="descricao-indice" style="font-family: sans-serif; font-size: 16px; color: #000; margin-top: 10px;">
-            Índice ${formData.get("indice").toUpperCase()} - Min: ${data.indices_vegetacao[formData.get("indice")].min.toFixed(3)}, Média: ${data.indices_vegetacao[formData.get("indice")].media.toFixed(3)}, Máx: ${data.indices_vegetacao[formData.get("indice")].max.toFixed(3)}
+            Índice ${indiceSelecionado.toUpperCase()} - Min: ${data.indices_vegetacao[indiceSelecionado].min.toFixed(3)}, Média: ${data.indices_vegetacao[indiceSelecionado].media.toFixed(3)}, Máx: ${data.indices_vegetacao[indiceSelecionado].max.toFixed(3)}
           </p>
           <button class="botao-acao gerar-pdf" data-pct="${pct.join(',')}">📄 Gerar Relatório Técnico</button>
         `;
 
         resultadosDiv.appendChild(container);
-      }
+      });
+
+      await Promise.all(processamentos);
 
       carregandoDiv.style.display = "none";
       botao.disabled = false;
       botao.innerText = "Analisar";
-    });
-
-    document.addEventListener("click", async (event) => {
-      if (event.target.classList.contains("gerar-pdf")) {
-        const container = event.target.closest(".resultado-container");
-        const imagens = container.querySelectorAll("img");
-        const descricao = container.querySelector(".descricao-indice").innerText;
-        const pct = event.target.dataset.pct.split(',');
-
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF("p", "mm", "a4");
-
-        pdf.setFontSize(18);
-        pdf.text("Relatório Técnico", 105, 20, null, null, "center");
-
-        const [data, hora] = new Date().toLocaleString().split(", ");
-        pdf.setFontSize(11);
-        pdf.text(`Data: ${data}`, 20, 36);
-        pdf.text(`Horário: ${hora}`, 20, 42);
-
-        const largura = 55;
-        const altura = 55;
-        const espacamento = 10;
-        const y = 50;
-        const titulos = ["Imagem Original", "Imagem Processada", "Índice de Vegetação"];
-
-        for (let i = 0; i < imagens.length; i++) {
-          const img = imagens[i];
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          ctx.drawImage(img, 0, 0);
-
-          const imgData = canvas.toDataURL("image/png");
-          const x = 20 + i * (largura + espacamento);
-          pdf.addImage(imgData, "PNG", x, y, largura, altura);
-          pdf.text(titulos[i], x + largura / 2, y + altura + 6, null, null, "center");
-        }
-
-        const yFinal = y + altura + 20;
-        pdf.setFontSize(12);
-        pdf.text(descricao, 20, yFinal);
-        pdf.text(`Tecido Saudável: ${pct[0]}% | Tecido Doente ou Deficiênte: ${pct[1]}% | Tecido Morto ou Ausente: ${pct[2]}%`, 20, yFinal + 10);
-        pdf.text("Desenvolvedor: Victor Rosário de Novais", 20, 30);
-
-        pdf.save("relatorio_tecnico.pdf");
-      }
     });
   </script>
 </body>
