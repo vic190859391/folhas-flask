@@ -8,12 +8,13 @@
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-WZZ7G8P2XG"></script>
   <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-WZZ7G8P2XG');
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WZZ7G8P2XG');
   </script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     body {
@@ -133,9 +134,7 @@
       <button type="submit" id="botao-analisar">Analisar</button>
     </form>
 
-    <p style="margin-top: -1rem; font-size: 0.9rem; color: gray;">
-      Pode tirar uma foto, anexar do ficheiro ou selecionar da galeria
-    </p>
+    <p style="margin-top: -1rem; font-size: 0.9rem; color: gray;">Pode tirar uma foto, anexar do ficheiro ou selecionar da galeria</p>
 
     <div id="carregando">
       <div class="spinner"></div>
@@ -219,10 +218,9 @@
             <div class="imagem-box"><p>Imagem Processada</p><img src="${proc}" alt="Imagem Processada" loading="lazy"></div>
             <div class="imagem-box"><p>Índice de Vegetação</p><img src="${ind}" alt="Índice de Vegetação" loading="lazy"></div>
           </div>
-          <p class="descricao-indice" style="font-family: sans-serif; font-size: 16px; color: #000; margin-top: 10px;">
+          <p class="descricao-indice" style="font-size: 16px; color: #000; margin-top: 10px;">
             Índice ${indiceSelecionado.toUpperCase()} - Min: ${data.indices_vegetacao[indiceSelecionado].min.toFixed(3)}, Média: ${data.indices_vegetacao[indiceSelecionado].media.toFixed(3)}, Máx: ${data.indices_vegetacao[indiceSelecionado].max.toFixed(3)}
           </p>
-          <button class="botao-acao gerar-pdf" data-pct="${pct.join(',')}">📄 Gerar Relatório Técnico</button>
         `;
 
         resultadosDiv.appendChild(container);
@@ -237,5 +235,6 @@
   </script>
 </body>
 </html>
+
 
 
